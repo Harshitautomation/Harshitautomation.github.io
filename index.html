@@ -14,7 +14,7 @@
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- Tailwind CSS (Configured via Script for standalone usage) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,7 +25,6 @@
                         'neon-green': '#0aff0a',
                         'deep-black': '#050505',
                         'graphite': '#121212',
-                        'glass': 'rgba(255, 255, 255, 0.05)',
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
@@ -46,149 +45,72 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
     <style>
-        /* Custom Styles for Premium Feel */
-        :root {
-            --cursor-color: #00f3ff;
-        }
-        
+        /* --- Base Reset & Typography --- */
         body {
             background-color: #050505;
             color: #e5e5e5;
             overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #050505;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #333;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--cursor-color);
-        }
+        /* --- Scrollbar --- */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00f3ff; }
 
-        /* CRT Scanline Effect */
-        .scanlines {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.3;
-        }
-
-        /* Utilities */
-        .text-glow {
-            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-        }
-        .text-glow-green {
-            text-shadow: 0 0 10px rgba(10, 255, 10, 0.5);
-        }
-        
-        .border-glow {
-            box-shadow: 0 0 10px rgba(0, 243, 255, 0.2);
-        }
-
+        /* --- Glassmorphism Panel --- */
         .glass-panel {
             background: rgba(18, 18, 18, 0.7);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
+        /* --- Utilities --- */
+        .text-glow { text-shadow: 0 0 10px rgba(0, 243, 255, 0.5); }
+        .text-glow-green { text-shadow: 0 0 10px rgba(10, 255, 10, 0.5); }
+        
         .terminal-cursor::after {
-            content: '█';
-            animation: blink 1s infinite;
-            color: var(--cursor-color);
-            margin-left: 2px;
+            content: '█'; animation: blink 1s infinite; color: #00f3ff; margin-left: 2px;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* --- CRT Overlay --- */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px; pointer-events: none; z-index: 9999; opacity: 0.15;
         }
 
-        /* Loader */
+        /* --- Loader --- */
         #loader {
-            position: fixed;
-            inset: 0;
-            background: #000;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: fixed; inset: 0; background: #000; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
             font-family: 'JetBrains Mono', monospace;
         }
+        .loader-bar { width: 300px; height: 2px; background: #333; margin-top: 20px; position: relative; overflow: hidden; }
+        .loader-progress { position: absolute; top: 0; left: 0; height: 100%; width: 0%; background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
 
-        .loader-bar {
-            width: 300px;
-            height: 2px;
-            background: #333;
-            margin-top: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        .loader-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 0%;
-            background: var(--cursor-color);
-            box-shadow: 0 0 10px var(--cursor-color);
-        }
+        /* --- Canvas --- */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.4; pointer-events: none; }
 
-        /* Canvas z-index */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            opacity: 0.6;
-        }
-
-        /* Timeline Pipe */
+        /* --- Timeline --- */
         .timeline-pipe {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, var(--cursor-color), transparent);
-            z-index: 0;
+            position: absolute; left: 50%; transform: translateX(-50%); width: 2px; height: 100%;
+            background: linear-gradient(to bottom, transparent, #00f3ff, transparent); z-index: 0;
         }
-        
-        @media (max-width: 768px) {
-            .timeline-pipe {
-                left: 20px;
-            }
-        }
+        @media (max-width: 768px) { .timeline-pipe { left: 20px; } }
 
-        .nav-link {
-            position: relative;
-        }
+        .nav-link { position: relative; }
         .nav-link::before {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0%;
-            height: 2px;
-            background: var(--cursor-color);
-            transition: width 0.3s ease;
+            content: ''; position: absolute; bottom: -4px; left: 0; width: 0%; height: 2px;
+            background: #00f3ff; transition: width 0.3s ease;
         }
-        .nav-link:hover::before {
-            width: 100%;
-        }
+        .nav-link:hover::before { width: 100%; }
     </style>
 </head>
 <body class="antialiased selection:bg-neon-blue selection:text-black">
@@ -196,9 +118,7 @@
     <!-- Loading Screen -->
     <div id="loader">
         <div class="text-neon-blue text-sm md:text-xl font-mono mb-2" id="loader-text">> INITIALIZING SYSTEM...</div>
-        <div class="loader-bar">
-            <div class="loader-progress" id="loader-progress"></div>
-        </div>
+        <div class="loader-bar"><div class="loader-progress" id="loader-progress"></div></div>
         <div class="text-gray-500 text-xs mt-2 font-mono">Loading modules: Three.js, GSAP, Assets</div>
     </div>
 
@@ -224,10 +144,7 @@
             <a href="#contact" class="hidden md:block px-6 py-2 border border-neon-blue text-neon-blue font-mono text-sm hover:bg-neon-blue hover:text-black transition-all duration-300">
                 INITIATE_CONTACT()
             </a>
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-white text-2xl" id="mobile-menu-btn">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="md:hidden text-white text-2xl" id="mobile-menu-btn"><i class="fas fa-bars"></i></button>
         </div>
     </nav>
 
@@ -237,6 +154,7 @@
         <a href="#identity" class="mobile-link hover:text-neon-blue">Identity</a>
         <a href="#metrics" class="mobile-link hover:text-neon-blue">Metrics</a>
         <a href="#experience" class="mobile-link hover:text-neon-blue">Experience</a>
+        <a href="#frameworks" class="mobile-link hover:text-neon-blue">Systems</a>
         <a href="#contact" class="mobile-link hover:text-neon-blue">Contact</a>
     </div>
 
@@ -245,39 +163,28 @@
         <!-- 1. Hero Section -->
         <section class="min-h-screen flex items-center justify-center relative px-6">
             <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-deep-black pointer-events-none"></div>
-            
-            <div class="text-center max-w-5xl mx-auto gs-reveal">
-                <div class="inline-block px-3 py-1 border border-neon-green/30 rounded-full bg-neon-green/5 text-neon-green text-xs font-mono mb-6 tracking-widest uppercase">
-                    System Status: Online • AWS Certified Architect
-                </div>
-                
+            <div class="text-center max-w-5xl mx-auto">
                 <h1 class="font-display text-5xl md:text-8xl font-bold tracking-tight mb-6 text-white leading-tight">
                     Designing Quality.<br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-neon-blue to-purple-500">Engineering Trust.</span>
                 </h1>
-                
                 <p class="text-gray-400 text-lg md:text-2xl font-light max-w-2xl mx-auto mb-10 leading-relaxed">
                     AI-Ready QA Architect & Automation Strategist building scalable, data-driven testing ecosystems for the world's leading financial and tech institutions.
                 </p>
-
                 <div class="flex flex-col md:flex-row gap-4 justify-center items-center font-mono">
                     <a href="#experience" class="group relative px-8 py-4 bg-neon-blue text-black font-bold overflow-hidden">
                         <span class="relative z-10 group-hover:text-white transition-colors duration-300">VIEW PIPELINE</span>
                         <div class="absolute inset-0 bg-black transform scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-300 ease-out"></div>
                     </a>
-                    <a href="#contact" class="px-8 py-4 border border-white/20 hover:border-neon-blue hover:text-neon-blue transition-all duration-300">
-                        CONNECT
-                    </a>
+                    <a href="#contact" class="px-8 py-4 border border-white/20 hover:border-neon-blue hover:text-neon-blue transition-all duration-300">CONNECT</a>
                 </div>
-
                 <div class="mt-16 flex justify-center space-x-8 text-gray-500 text-2xl">
                     <a href="https://github.com/Harshitautomation" target="_blank" class="hover:text-neon-blue transition-colors"><i class="fab fa-github"></i></a>
                     <a href="https://www.linkedin.com/in/harshitshah15" target="_blank" class="hover:text-neon-blue transition-colors"><i class="fab fa-linkedin"></i></a>
+                    <a href="https://harshitshah156.medium.com/" target="_blank" class="hover:text-neon-blue transition-colors"><i class="fab fa-medium"></i></a>
                     <a href="mailto:harshitshah156@gmail.com" class="hover:text-neon-blue transition-colors"><i class="fas fa-envelope"></i></a>
                 </div>
             </div>
-            
-            <!-- Scroll Indicator -->
             <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex flex-col items-center animate-bounce">
                 <span class="text-[10px] text-neon-blue font-mono mb-2">SCROLL</span>
                 <div class="w-[1px] h-12 bg-gradient-to-b from-neon-blue to-transparent"></div>
@@ -288,7 +195,7 @@
         <section id="identity" class="py-24 px-6 bg-deep-black relative">
             <div class="max-w-7xl mx-auto">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
-                    <div class="gs-reveal-left">
+                    <div class="identity-anim-left opacity-0 -translate-x-10 transition-all duration-1000">
                         <h2 class="font-display text-4xl md:text-5xl font-bold mb-6">Who I Am</h2>
                         <div class="h-1 w-20 bg-neon-blue mb-8"></div>
                         <p class="text-gray-400 text-lg mb-6 leading-relaxed">
@@ -297,34 +204,17 @@
                         <p class="text-gray-400 text-lg mb-8 leading-relaxed">
                             From architecting frameworks from scratch at <span class="text-neon-blue">American Express</span> to leading cross-functional teams at <span class="text-neon-blue">Credit Suisse</span> and <span class="text-neon-blue">HSBC</span>, my focus is on observability, speed, and reliability.
                         </p>
-                        
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-sm">
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-check text-neon-green"></i>
-                                <span>AI-Ready Methodologies</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-check text-neon-green"></i>
-                                <span>Cloud Architecture (AWS)</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-check text-neon-green"></i>
-                                <span>Performance Engineering</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <i class="fas fa-check text-neon-green"></i>
-                                <span>DevOps Integration</span>
-                            </div>
+                            <div class="flex items-center space-x-2"><i class="fas fa-check text-neon-green"></i><span>AI-Ready Methodologies</span></div>
+                            <div class="flex items-center space-x-2"><i class="fas fa-check text-neon-green"></i><span>Cloud Architecture (AWS)</span></div>
+                            <div class="flex items-center space-x-2"><i class="fas fa-check text-neon-green"></i><span>Performance Engineering</span></div>
+                            <div class="flex items-center space-x-2"><i class="fas fa-check text-neon-green"></i><span>DevOps Integration</span></div>
                         </div>
                     </div>
-                    
-                    <!-- Terminal Visual -->
-                    <div class="gs-reveal-right">
+                    <div class="identity-anim-right opacity-0 translate-x-10 transition-all duration-1000">
                         <div class="glass-panel rounded-lg overflow-hidden border border-gray-800 shadow-2xl font-mono text-sm">
                             <div class="bg-gray-900 px-4 py-2 flex items-center space-x-2 border-b border-gray-800">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div class="w-3 h-3 rounded-full bg-green-500"></div>
                                 <span class="ml-2 text-gray-500 text-xs">user@sdet-architect:~</span>
                             </div>
                             <div class="p-6 h-80 overflow-y-auto text-gray-300">
@@ -347,57 +237,30 @@
 
         <!-- 3. Impact Metrics Section -->
         <section id="metrics" class="py-24 px-6 bg-[#080808] border-y border-white/5 relative overflow-hidden">
-            <!-- Background Grid -->
             <div class="absolute inset-0 bg-grid-pattern bg-[length:40px_40px] opacity-10 pointer-events-none"></div>
-            
             <div class="max-w-7xl mx-auto relative z-10">
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-center mb-16">System Performance <span class="text-neon-blue">Metrics</span></h2>
-                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Metric 1 -->
-                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-neon-blue gs-metric">
+                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-neon-blue">
                         <div class="text-gray-500 font-mono text-sm uppercase tracking-widest mb-2">Cycle Time Reduction</div>
                         <div class="text-5xl md:text-6xl font-display font-bold text-white mb-2 flex justify-center items-baseline">
                             <span class="counter" data-target="75">0</span><span class="text-3xl text-neon-blue">%</span>
                         </div>
                         <p class="text-gray-400 text-sm mt-2">Amex: File Validation System Automation</p>
                     </div>
-
-                    <!-- Metric 2 -->
-                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-neon-green gs-metric">
+                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-neon-green">
                         <div class="text-gray-500 font-mono text-sm uppercase tracking-widest mb-2">Defect Reduction</div>
                         <div class="text-5xl md:text-6xl font-display font-bold text-white mb-2 flex justify-center items-baseline">
                             <span class="counter" data-target="65">0</span><span class="text-3xl text-neon-green">%</span>
                         </div>
                         <p class="text-gray-400 text-sm mt-2">Amex: API Reliability Improvements</p>
                     </div>
-
-                    <!-- Metric 3 -->
-                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-purple-500 gs-metric">
+                    <div class="glass-panel p-8 rounded-xl text-center border-t-4 border-purple-500">
                         <div class="text-gray-500 font-mono text-sm uppercase tracking-widest mb-2">Deployment Speed</div>
                         <div class="text-5xl md:text-6xl font-display font-bold text-white mb-2 flex justify-center items-baseline">
                             <span class="counter" data-target="85">0</span><span class="text-3xl text-purple-500">%</span>
                         </div>
                         <p class="text-gray-400 text-sm mt-2">CI/CD Pipeline Optimization</p>
-                    </div>
-                </div>
-
-                <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 text-center font-mono text-xs md:text-sm text-gray-400 gs-reveal">
-                    <div class="p-4 border border-white/10">
-                        <div class="text-2xl text-white font-bold mb-1">8+</div>
-                        <div>Members Led</div>
-                    </div>
-                    <div class="p-4 border border-white/10">
-                        <div class="text-2xl text-white font-bold mb-1">15%</div>
-                        <div>Ahead of Schedule</div>
-                    </div>
-                    <div class="p-4 border border-white/10">
-                        <div class="text-2xl text-white font-bold mb-1">90%</div>
-                        <div>Test Coverage</div>
-                    </div>
-                    <div class="p-4 border border-white/10">
-                        <div class="text-2xl text-white font-bold mb-1">40%</div>
-                        <div>Execution Time Cut</div>
                     </div>
                 </div>
             </div>
@@ -407,82 +270,36 @@
         <section class="py-24 px-6 bg-deep-black">
             <div class="max-w-7xl mx-auto">
                 <h2 class="font-display text-3xl md:text-4xl font-bold mb-12">Skill <span class="text-neon-blue">Architecture</span></h2>
-                
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Card 1 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-neon-blue/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-neon-blue text-2xl mb-4"><i class="fas fa-robot"></i></div>
                         <h3 class="text-xl font-bold text-white mb-3">Automation Core</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Selenium</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">WebDriverIO</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Cucumber (BDD)</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Appium</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Java</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JavaScript</span>
-                        </div>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Selenium</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">WebDriverIO</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Cucumber</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Appium</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Java</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JS</span></div>
                     </div>
-
-                    <!-- Card 2 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-neon-green/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-neon-green text-2xl mb-4"><i class="fas fa-server"></i></div>
                         <h3 class="text-xl font-bold text-white mb-3">API & Performance</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Rest-Assured</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Karate</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Postman</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JMeter</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Gatling</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">K6</span>
-                        </div>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Rest-Assured</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Karate</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JMeter</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Gatling</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">K6</span></div>
                     </div>
-
-                    <!-- Card 3 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-purple-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-purple-500 text-2xl mb-4"><i class="fab fa-aws"></i></div>
                         <h3 class="text-xl font-bold text-white mb-3">DevOps & Cloud</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">AWS (Architect)</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Jenkins</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Docker</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Git</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">GitHub Actions</span>
-                        </div>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">AWS (Architect)</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Jenkins</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Docker</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Git</span></div>
                     </div>
-
-                    <!-- Card 4 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-yellow-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-yellow-500 text-2xl mb-4"><i class="fas fa-brain"></i></div>
                         <h3 class="text-xl font-bold text-white mb-3">AI & Future Tech</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">RAG Models</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Test Gen AI</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Smart Orchestration</span>
-                        </div>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">RAG Models</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Test Gen AI</span></div>
                     </div>
-                    
-                    <!-- Card 5 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-pink-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-pink-500 text-2xl mb-4"><i class="fas fa-universal-access"></i></div>
-                        <h3 class="text-xl font-bold text-white mb-3">Accessibility & Security</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JAWS</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">NVDA</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">AXE Core</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">OWASP (Basic)</span>
-                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Accessibility</h3>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">JAWS</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">NVDA</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">AXE Core</span></div>
                     </div>
-
-                    <!-- Card 6 -->
                     <div class="group p-6 rounded-lg bg-[#0a0a0a] border border-white/5 hover:border-red-500/50 transition-all duration-300 hover:transform hover:-translate-y-1">
                         <div class="text-red-500 text-2xl mb-4"><i class="fas fa-database"></i></div>
                         <h3 class="text-xl font-bold text-white mb-3">Data & Tools</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">SQL</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Kafka</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">WireMock</span>
-                            <span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">SonarQube</span>
-                        </div>
+                        <div class="flex flex-wrap gap-2"><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">SQL</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">Kafka</span><span class="px-2 py-1 bg-gray-800 text-xs rounded text-gray-300">SonarQube</span></div>
                     </div>
                 </div>
             </div>
@@ -492,104 +309,76 @@
         <section id="experience" class="py-24 px-6 bg-[#080808] relative">
             <div class="max-w-5xl mx-auto">
                 <h2 class="font-display text-3xl md:text-4xl font-bold text-center mb-16">Execution <span class="text-neon-blue">Timeline</span></h2>
-                
                 <div class="relative">
-                    <!-- The vertical line -->
                     <div class="timeline-pipe"></div>
-
-                    <!-- Node 1: Amex -->
-                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center experience-node">
+                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center exp-node opacity-0 translate-y-10">
                         <div class="md:text-right mb-4 md:mb-0 px-6">
                             <div class="text-neon-blue font-mono text-sm mb-2">Nov 2022 - Present</div>
                             <h3 class="text-2xl font-bold text-white">American Express</h3>
                             <div class="text-gray-400 font-mono text-sm mb-4">Sr. Quality Engineer II</div>
-                            <p class="text-gray-400 text-sm leading-relaxed">
-                                Architected end-to-end automation frameworks for Backend Office Processing using Selenium & Java, reducing manual verification by 75%. Led API automation strategy improving reliability by 40%.
-                            </p>
+                            <p class="text-gray-400 text-sm leading-relaxed">Architected end-to-end automation frameworks for Backend Office Processing using Selenium & Java, reducing manual verification by 75%. Led API automation strategy improving reliability by 40%.</p>
                         </div>
-                        <div class="hidden md:flex justify-center">
-                            <div class="w-6 h-6 rounded-full bg-black border-4 border-neon-blue shadow-[0_0_15px_#00f3ff]"></div>
-                        </div>
-                        <div class="md:pl-6 pl-12">
-                             <!-- Spacer for desktop layout logic -->
-                        </div>
+                        <div class="hidden md:flex justify-center"><div class="w-6 h-6 rounded-full bg-black border-4 border-neon-blue shadow-[0_0_15px_#00f3ff]"></div></div>
+                        <div class="md:pl-6 pl-12"></div>
                     </div>
-
-                    <!-- Node 2: Credit Suisse -->
-                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center experience-node">
-                        <div class="hidden md:block"></div> <!-- Spacer -->
-                        <div class="hidden md:flex justify-center">
-                            <div class="w-6 h-6 rounded-full bg-black border-4 border-purple-500 shadow-[0_0_15px_#a855f7]"></div>
-                        </div>
+                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center exp-node opacity-0 translate-y-10">
+                        <div class="hidden md:block"></div>
+                        <div class="hidden md:flex justify-center"><div class="w-6 h-6 rounded-full bg-black border-4 border-purple-500 shadow-[0_0_15px_#a855f7]"></div></div>
                         <div class="pl-12 md:pl-6 pr-6">
                             <div class="text-purple-500 font-mono text-sm mb-2">Sep 2021 - Oct 2022</div>
                             <h3 class="text-2xl font-bold text-white">Credit Suisse</h3>
                             <div class="text-gray-400 font-mono text-sm mb-4">Sr. SDET Analyst</div>
-                            <p class="text-gray-400 text-sm leading-relaxed">
-                                Architected comprehensive automation frameworks from scratch using Selenium & Cucumber. Engineered API automation suites and real-time health dashboards for monitoring.
-                            </p>
+                            <p class="text-gray-400 text-sm leading-relaxed">Architected comprehensive automation frameworks from scratch using Selenium & Cucumber. Engineered API automation suites and real-time health dashboards for monitoring.</p>
                         </div>
                     </div>
-
-                    <!-- Node 3: HSBC -->
-                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center experience-node">
+                    <div class="relative z-10 mb-16 md:grid md:grid-cols-2 md:gap-12 items-center exp-node opacity-0 translate-y-10">
                         <div class="md:text-right mb-4 md:mb-0 px-6">
                             <div class="text-neon-green font-mono text-sm mb-2">Jan 2020 - Aug 2021</div>
                             <h3 class="text-2xl font-bold text-white">HSBC</h3>
                             <div class="text-gray-400 font-mono text-sm mb-4">Sr. Software Engineer</div>
-                            <p class="text-gray-400 text-sm leading-relaxed">
-                                Mortgage Process Optimization (MPO). Implemented Accessibility Testing (NVDA/JAWS) and POC for live reporting using Docker & ELK Stack. Awarded "Innovator of the Quarter".
-                            </p>
+                            <p class="text-gray-400 text-sm leading-relaxed">Mortgage Process Optimization (MPO). Implemented Accessibility Testing (NVDA/JAWS) and POC for live reporting using Docker & ELK Stack. Awarded "Innovator of the Quarter".</p>
                         </div>
-                        <div class="hidden md:flex justify-center">
-                            <div class="w-6 h-6 rounded-full bg-black border-4 border-neon-green shadow-[0_0_15px_#0aff0a]"></div>
-                        </div>
+                        <div class="hidden md:flex justify-center"><div class="w-6 h-6 rounded-full bg-black border-4 border-neon-green shadow-[0_0_15px_#0aff0a]"></div></div>
                         <div class="md:pl-6 pl-12"></div>
                     </div>
-
-                    <!-- Node 4: Tech Mahindra -->
-                    <div class="relative z-10 md:grid md:grid-cols-2 md:gap-12 items-center experience-node">
+                    <div class="relative z-10 md:grid md:grid-cols-2 md:gap-12 items-center exp-node opacity-0 translate-y-10">
                         <div class="hidden md:block"></div>
-                        <div class="hidden md:flex justify-center">
-                            <div class="w-6 h-6 rounded-full bg-black border-4 border-gray-500 shadow-[0_0_15px_#6b7280]"></div>
-                        </div>
+                        <div class="hidden md:flex justify-center"><div class="w-6 h-6 rounded-full bg-black border-4 border-gray-500 shadow-[0_0_15px_#6b7280]"></div></div>
                         <div class="pl-12 md:pl-6 pr-6">
                             <div class="text-gray-400 font-mono text-sm mb-2">Sep 2013 - Dec 2019</div>
                             <h3 class="text-2xl font-bold text-white">Tech Mahindra</h3>
                             <div class="text-gray-400 font-mono text-sm mb-4">Sr. Software Engineer</div>
-                            <p class="text-gray-400 text-sm leading-relaxed">
-                                AT&T & HSBC clients. Onsite coordinator in Atlanta (USA). Led QA cycles, billing validation, and UAT testing. "Standing Ovation" award for project delivery.
-                            </p>
+                            <p class="text-gray-400 text-sm leading-relaxed">AT&T & HSBC clients. Onsite coordinator in Atlanta (USA). Led QA cycles, billing validation, and UAT testing. "Standing Ovation" award for project delivery.</p>
                         </div>
                     </div>
-
                 </div>
             </div>
         </section>
 
-        <!-- 6. Frameworks & AI Ready -->
-        <section id="frameworks" class="py-24 px-6 bg-deep-black">
+        <!-- 6. Frameworks & AI Ready (FIXED SECTION) -->
+        <section id="frameworks" class="py-24 px-6 bg-deep-black relative z-20 block">
+            <!-- Force Visibility with Inline Style if JS fails -->
             <div class="max-w-7xl mx-auto">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                     
                     <!-- Frameworks Built -->
-                    <div class="gs-reveal-left">
-                        <h2 class="font-display text-3xl font-bold mb-8 border-l-4 border-neon-blue pl-4">Systems Designed</h2>
+                    <div class="frameworks-anim-left opacity-0 -translate-x-10 transition-all duration-1000">
+                        <h2 class="font-display text-3xl font-bold mb-8 border-l-4 border-neon-blue pl-4 text-white">Systems Designed</h2>
                         
                         <div class="space-y-6">
-                            <div class="glass-panel p-6 rounded-lg">
+                            <div class="glass-panel p-6 rounded-lg border border-white/5 hover:border-neon-blue/30 transition-colors">
                                 <h4 class="text-neon-blue font-bold text-lg mb-2">NFS File Validation System</h4>
                                 <p class="text-sm text-gray-400 mb-2">Client: American Express</p>
                                 <p class="text-gray-300 text-sm">Automated daily file comparison processes using Java & Selenium, significantly reducing manual verification effort.</p>
                             </div>
                             
-                            <div class="glass-panel p-6 rounded-lg">
+                            <div class="glass-panel p-6 rounded-lg border border-white/5 hover:border-neon-blue/30 transition-colors">
                                 <h4 class="text-neon-blue font-bold text-lg mb-2">UI Automation Framework</h4>
                                 <p class="text-sm text-gray-400 mb-2">Client: American Express</p>
                                 <p class="text-gray-300 text-sm">Built with WebDriverIO & JavaScript. Achieved 90% test coverage and slashed cycle time from 3 days to 8 hours.</p>
                             </div>
 
-                            <div class="glass-panel p-6 rounded-lg">
+                            <div class="glass-panel p-6 rounded-lg border border-white/5 hover:border-neon-blue/30 transition-colors">
                                 <h4 class="text-neon-blue font-bold text-lg mb-2">Live Reporting Dashboard (ELK)</h4>
                                 <p class="text-sm text-gray-400 mb-2">Client: HSBC</p>
                                 <p class="text-gray-300 text-sm">Implemented POC using Docker & ELK Stack to visualize test execution results in real-time.</p>
@@ -598,44 +387,37 @@
                     </div>
 
                     <!-- AI Ready -->
-                    <div id="ai-ready" class="gs-reveal-right relative">
-                        <div class="absolute inset-0 bg-neon-blue/5 blur-3xl rounded-full"></div>
-                        <h2 class="font-display text-3xl font-bold mb-8 border-l-4 border-neon-green pl-4 relative z-10">AI-Ready QA</h2>
+                    <div id="ai-ready" class="frameworks-anim-right opacity-0 translate-x-10 transition-all duration-1000 relative w-full">
+                        <!-- Background Glow -->
+                        <div class="absolute -top-20 -right-20 w-64 h-64 bg-neon-green/10 rounded-full blur-[80px] pointer-events-none"></div>
                         
-                        <div class="glass-panel p-8 rounded-lg border border-neon-green/30 relative z-10">
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-3 h-3 bg-neon-green rounded-full animate-pulse"></div>
-                                <h3 class="text-xl font-bold text-white">Next-Gen Testing Strategies</h3>
-                            </div>
+                        <div class="relative z-10">
+                            <h2 class="font-display text-3xl font-bold mb-8 border-l-4 border-neon-green pl-4 text-white">AI-Ready QA</h2>
                             
-                            <ul class="space-y-4 font-mono text-sm text-gray-300">
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-code-branch text-neon-green mt-1"></i>
-                                    <span><strong class="text-white">RAG Solutions:</strong> Developing Retrieval-Augmented Generation models for intelligent test case creation.</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-magic text-neon-green mt-1"></i>
-                                    <span><strong class="text-white">Predictive Analytics:</strong> AI-driven defect prediction and root cause analysis.</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-eye text-neon-green mt-1"></i>
-                                    <span><strong class="text-white">Visual AI:</strong> Automated visual regression testing flows.</span>
-                                </li>
-                                <li class="flex items-start gap-3">
-                                    <i class="fas fa-shield-alt text-neon-green mt-1"></i>
-                                    <span><strong class="text-white">Self-Healing Tests:</strong> Reducing maintenance overhead through smart selectors.</span>
-                                </li>
-                            </ul>
-                            
-                            <div class="mt-8 pt-6 border-t border-gray-700">
-                                <p class="text-xs text-gray-500 mb-2">CURRENT STATUS</p>
-                                <div class="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                                    <div class="bg-neon-green h-full w-[35%] animate-pulse"></div>
+                            <div class="glass-panel p-8 rounded-lg border border-neon-green/20 shadow-[0_0_30px_rgba(10,255,10,0.05)]">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-3 h-3 bg-neon-green rounded-full animate-pulse shadow-[0_0_10px_#0aff0a]"></div>
+                                    <h3 class="text-xl font-bold text-white">Next-Gen Testing Strategies</h3>
                                 </div>
-                                <div class="flex justify-between text-xs text-neon-green mt-1 font-mono">
-                                    <span>Foundation</span>
-                                    <span>35% Complete</span>
-                                </div>
+                                
+                                <ul class="space-y-4 font-mono text-sm text-gray-300">
+                                    <li class="flex items-start gap-3">
+                                        <i class="fas fa-code-branch text-neon-green mt-1"></i>
+                                        <span><strong class="text-white">RAG Solutions:</strong> Developing Retrieval-Augmented Generation models for intelligent test case creation.</span>
+                                    </li>
+                                    <li class="flex items-start gap-3">
+                                        <i class="fas fa-magic text-neon-green mt-1"></i>
+                                        <span><strong class="text-white">Predictive Analytics:</strong> AI-driven defect prediction and root cause analysis.</span>
+                                    </li>
+                                    <li class="flex items-start gap-3">
+                                        <i class="fas fa-eye text-neon-green mt-1"></i>
+                                        <span><strong class="text-white">Visual AI:</strong> Automated visual regression testing flows.</span>
+                                    </li>
+                                    <li class="flex items-start gap-3">
+                                        <i class="fas fa-shield-alt text-neon-green mt-1"></i>
+                                        <span><strong class="text-white">Self-Healing Tests:</strong> Reducing maintenance overhead through smart selectors.</span>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
@@ -647,7 +429,6 @@
         <section class="py-24 px-6 bg-gradient-to-b from-[#080808] to-deep-black">
             <div class="max-w-7xl mx-auto text-center">
                 <h2 class="font-display text-3xl font-bold mb-12">Recognition <span class="text-neon-blue">& Awards</span></h2>
-                
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="glass-panel p-8 rounded-xl border border-yellow-500/20 hover:border-yellow-500 transition-colors group">
                         <i class="fas fa-trophy text-4xl text-yellow-500 mb-4 group-hover:scale-110 transition-transform"></i>
@@ -655,14 +436,12 @@
                         <p class="text-sm text-gray-400">HSBC (July 2020)</p>
                         <p class="text-xs text-gray-500 mt-4">For developing a new framework that reduced execution time by 40%.</p>
                     </div>
-                    
                     <div class="glass-panel p-8 rounded-xl border border-neon-blue/20 hover:border-neon-blue transition-colors group">
                         <i class="fas fa-award text-4xl text-neon-blue mb-4 group-hover:scale-110 transition-transform"></i>
                         <h3 class="text-xl font-bold text-white mb-2">Pat on Back Award</h3>
                         <p class="text-sm text-gray-400">Tech Mahindra (June 2019)</p>
                         <p class="text-xs text-gray-500 mt-4">Key role in testing AT&T TV from scratch to production launch.</p>
                     </div>
-
                     <div class="glass-panel p-8 rounded-xl border border-purple-500/20 hover:border-purple-500 transition-colors group">
                         <i class="fas fa-star text-4xl text-purple-500 mb-4 group-hover:scale-110 transition-transform"></i>
                         <h3 class="text-xl font-bold text-white mb-2">Standing Ovation</h3>
@@ -673,25 +452,22 @@
             </div>
         </section>
 
-        <!-- 8. Thought Leadership (Blog/Talks Placeholder) -->
+        <!-- 8. Thought Leadership -->
         <section class="py-24 px-6 bg-deep-black border-t border-white/5">
             <div class="max-w-7xl mx-auto">
                 <h2 class="font-display text-3xl font-bold mb-10">Thought <span class="text-neon-blue">Leadership</span></h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Blog Card 1 -->
-                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group">
+                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group border border-white/5">
                         <div class="text-neon-blue text-xs font-mono mb-2">ARCHITECTURE</div>
                         <h3 class="text-lg font-bold text-white mb-3 group-hover:text-neon-blue transition-colors">Designing Scalable Automation Frameworks</h3>
                         <p class="text-gray-500 text-sm">Best practices for building maintainable test suites that grow with your product.</p>
                     </div>
-                    <!-- Blog Card 2 -->
-                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group">
+                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group border border-white/5">
                         <div class="text-purple-500 text-xs font-mono mb-2">AI IN TESTING</div>
                         <h3 class="text-lg font-bold text-white mb-3 group-hover:text-purple-500 transition-colors">Introduction to RAG for Test Case Generation</h3>
                         <p class="text-gray-500 text-sm">Exploring how Large Language Models can revolutionize test design.</p>
                     </div>
-                    <!-- Blog Card 3 -->
-                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group">
+                    <div class="bg-[#111] p-6 rounded-lg hover:bg-[#1a1a1a] transition-colors cursor-pointer group border border-white/5">
                         <div class="text-neon-green text-xs font-mono mb-2">PERFORMANCE</div>
                         <h3 class="text-lg font-bold text-white mb-3 group-hover:text-neon-green transition-colors">CI/CD Integration with K6</h3>
                         <p class="text-gray-500 text-sm">Shifting performance testing left in the development lifecycle.</p>
@@ -703,11 +479,9 @@
         <!-- 9. Contact Section -->
         <section id="contact" class="py-24 px-6 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-1/2 h-full bg-neon-blue/5 blur-[100px] pointer-events-none"></div>
-            
             <div class="max-w-3xl mx-auto relative z-10 glass-panel p-8 md:p-12 rounded-2xl border border-white/10">
                 <h2 class="font-display text-3xl font-bold mb-2">Initialize <span class="text-neon-blue">Connection</span></h2>
                 <p class="text-gray-400 mb-8 font-mono text-sm">root@harshit:~$ ./connect.sh --target="opportunity"</p>
-                
                 <form id="contact-form" class="space-y-6 font-mono">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="relative">
@@ -733,24 +507,22 @@
                         <textarea id="message" rows="4" required class="w-full bg-[#0a0a0a] border border-gray-700 rounded p-3 text-white focus:outline-none focus:border-neon-blue focus:shadow-[0_0_10px_rgba(0,243,255,0.2)] transition-all"></textarea>
                         <label for="message" class="absolute left-3 -top-2.5 bg-[#0a0a0a] px-1 text-xs text-neon-blue">MESSAGE PAYLOAD</label>
                     </div>
-                    
                     <button type="submit" class="w-full py-4 bg-neon-blue/10 border border-neon-blue text-neon-blue font-bold hover:bg-neon-blue hover:text-black transition-all duration-300 uppercase tracking-widest flex justify-center items-center gap-2 group">
                         <span>Send Transmission</span>
                         <i class="fas fa-paper-plane group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </form>
-
                 <div class="mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-gray-500 font-mono border-t border-gray-800 pt-6">
                     <p>&copy; 2023 Harshit Shah. All systems nominal.</p>
                     <div class="flex space-x-4 mt-4 md:mt-0">
                         <a href="https://github.com/Harshitautomation" target="_blank" class="hover:text-white transition-colors">GITHUB</a>
+                        <a href="https://harshitshah156.medium.com/" target="_blank" class="hover:text-white transition-colors">MEDIUM</a>
                         <a href="https://www.linkedin.com/in/harshitshah15" target="_blank" class="hover:text-white transition-colors">LINKEDIN</a>
                         <a href="#" class="hover:text-white transition-colors">DOWNLOAD_RESUME.pdf</a>
                     </div>
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- Toast Notification -->
@@ -771,26 +543,15 @@
             const loader = document.getElementById('loader');
             const progress = document.getElementById('loader-progress');
             const text = document.getElementById('loader-text');
-
-            // Simulate loading process
             let width = 0;
             const interval = setInterval(() => {
                 if (width >= 100) {
                     clearInterval(interval);
-                    // Fade out loader
-                    gsap.to(loader, {
-                        opacity: 0,
-                        duration: 0.8,
-                        onComplete: () => {
-                            loader.style.display = 'none';
-                            initAnimations(); // Start main animations
-                        }
-                    });
+                    gsap.to(loader, { opacity: 0, duration: 0.8, onComplete: () => { loader.style.display = 'none'; initAnimations(); } });
                 } else {
                     width += Math.random() * 10;
                     if(width > 100) width = 100;
                     progress.style.width = width + '%';
-                    
                     if(width > 30 && width < 60) text.innerText = "> LOADING ASSETS...";
                     if(width > 60 && width < 90) text.innerText = "> INITIALIZING THREE.JS...";
                     if(width > 90) text.innerText = "> SYSTEM READY.";
@@ -804,249 +565,118 @@
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
-            
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer.setPixelRatio(window.devicePixelRatio);
-
-            // Particles
             const particlesGeometry = new THREE.BufferGeometry();
             const particlesCount = 150;
             const posArray = new Float32Array(particlesCount * 3);
-
-            for(let i = 0; i < particlesCount * 3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 20; // Spread
-            }
-
+            for(let i = 0; i < particlesCount * 3; i++) { posArray[i] = (Math.random() - 0.5) * 20; }
             particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-
-            const material = new THREE.PointsMaterial({
-                size: 0.03,
-                color: 0x00f3ff,
-                transparent: true,
-                opacity: 0.8,
-            });
-
+            const material = new THREE.PointsMaterial({ size: 0.03, color: 0x00f3ff, transparent: true, opacity: 0.8 });
             const particlesMesh = new THREE.Points(particlesGeometry, material);
             scene.add(particlesMesh);
-
-            // Lines connecting particles
-            const lineMaterial = new THREE.LineBasicMaterial({
-                color: 0x00f3ff,
-                transparent: true,
-                opacity: 0.15
-            });
-
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.15 });
             const linesGeometry = new THREE.BufferGeometry();
             const linesMesh = new THREE.LineSegments(linesGeometry, lineMaterial);
             scene.add(linesMesh);
-
             camera.position.z = 5;
-
-            // Mouse interaction
-            let mouseX = 0;
-            let mouseY = 0;
-
-            document.addEventListener('mousemove', (event) => {
-                mouseX = event.clientX / window.innerWidth - 0.5;
-                mouseY = event.clientY / window.innerHeight - 0.5;
-            });
-
-            // Resize handler
-            window.addEventListener('resize', () => {
-                camera.aspect = window.innerWidth / window.innerHeight;
-                camera.updateProjectionMatrix();
-                renderer.setSize(window.innerWidth, window.innerHeight);
-            });
-
-            // Animation Loop
+            let mouseX = 0; let mouseY = 0;
+            document.addEventListener('mousemove', (event) => { mouseX = event.clientX / window.innerWidth - 0.5; mouseY = event.clientY / window.innerHeight - 0.5; });
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
             const clock = new THREE.Clock();
-
             function animate() {
                 requestAnimationFrame(animate);
                 const elapsedTime = clock.getElapsedTime();
-
-                // Rotate entire system slowly
                 particlesMesh.rotation.y = elapsedTime * 0.05;
                 particlesMesh.rotation.x = mouseY * 0.5;
                 particlesMesh.rotation.y += mouseX * 0.5;
-
                 linesMesh.rotation.y = elapsedTime * 0.05;
                 linesMesh.rotation.x = mouseY * 0.5;
                 linesMesh.rotation.y += mouseX * 0.5;
-
-                // Update lines dynamically (expensive but looks cool)
-                // Note: For performance in production, use a shader or pre-calculated lines.
-                // Here we do a simple version for the demo effect.
                 const positions = particlesMesh.geometry.attributes.position.array;
                 const linePositions = [];
-                
-                // Transform positions to world space to calculate distance
                 const worldPositions = [];
                 const vector = new THREE.Vector3();
-                
                 for(let i=0; i<particlesCount; i++){
                     vector.set(positions[i*3], positions[i*3+1], positions[i*3+2]);
                     vector.applyMatrix4(particlesMesh.matrixWorld);
                     worldPositions.push(vector.clone());
                 }
-
                 for (let i = 0; i < particlesCount; i++) {
                     for (let j = i + 1; j < particlesCount; j++) {
                         const dist = worldPositions[i].distanceTo(worldPositions[j]);
                         if (dist < 3.5) {
-                            linePositions.push(
-                                positions[i*3], positions[i*3+1], positions[i*3+2],
-                                positions[j*3], positions[j*3+1], positions[j*3+2]
-                            );
+                            linePositions.push(positions[i*3], positions[i*3+1], positions[i*3+2], positions[j*3], positions[j*3+1], positions[j*3+2]);
                         }
                     }
                 }
-                
                 linesMesh.geometry.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-
                 renderer.render(scene, camera);
             }
-
             animate();
         }
-
         initThreeJS();
 
-        // --- 3. GSAP Animations ---
+        // --- 3. GSAP Animations (FIXED CONFLICTS) ---
         function initAnimations() {
             gsap.registerPlugin(ScrollTrigger);
-
-            // Hero Text Reveal
-            gsap.from(".gs-reveal h1", {
-                duration: 1,
-                y: 50,
-                opacity: 0,
-                ease: "power3.out",
-                delay: 0.2
+            
+            // Hero Animations (Generic but only used once in Hero)
+            gsap.from(".text-5xl", { duration: 1, y: 50, opacity: 0, ease: "power3.out", delay: 0.2 });
+            
+            // Identity Animations (Specific Class)
+            gsap.to(".identity-anim-left", {
+                scrollTrigger: { trigger: "#identity", start: "top 80%" },
+                opacity: 1, x: 0, duration: 1, ease: "power3.out"
             });
-            gsap.from(".gs-reveal p", {
-                duration: 1,
-                y: 30,
-                opacity: 0,
-                ease: "power3.out",
-                delay: 0.4
-            });
-            gsap.from(".gs-reveal a", {
-                duration: 1,
-                y: 20,
-                opacity: 0,
-                stagger: 0.1,
-                ease: "power3.out",
-                delay: 0.6
+            gsap.to(".identity-anim-right", {
+                scrollTrigger: { trigger: "#identity", start: "top 80%" },
+                opacity: 1, x: 0, duration: 1, ease: "power3.out"
             });
 
-            // Identity Section Slide In
-            gsap.from(".gs-reveal-left", {
-                scrollTrigger: {
-                    trigger: "#identity",
-                    start: "top 80%",
-                },
-                x: -50,
-                opacity: 0,
-                duration: 1,
-                ease: "power3.out"
-            });
-            gsap.from(".gs-reveal-right", {
-                scrollTrigger: {
-                    trigger: "#identity",
-                    start: "top 80%",
-                },
-                x: 50,
-                opacity: 0,
-                duration: 1,
-                ease: "power3.out"
-            });
-
-            // Metrics Counter Animation
+            // Metrics Counter
             const counters = document.querySelectorAll('.counter');
             counters.forEach(counter => {
                 const target = +counter.getAttribute('data-target');
-                ScrollTrigger.create({
-                    trigger: counter,
-                    start: "top 85%",
-                    once: true,
-                    onEnter: () => {
-                        gsap.to(counter, {
-                            innerText: target,
-                            duration: 2,
-                            snap: { innerText: 1 },
-                            ease: "power2.out"
-                        });
-                    }
+                ScrollTrigger.create({ trigger: counter, start: "top 85%", once: true, onEnter: () => { gsap.to(counter, { innerText: target, duration: 2, snap: { innerText: 1 }, ease: "power2.out" }); } });
+            });
+
+            // Experience Animations
+            gsap.utils.toArray('.exp-node').forEach((node, i) => {
+                gsap.to(node, {
+                    scrollTrigger: { trigger: node, start: "top 85%" },
+                    opacity: 1, y: 0, duration: 0.8, delay: i * 0.1, ease: "power3.out"
                 });
             });
 
-            // Experience Timeline Stagger
-            gsap.utils.toArray('.experience-node').forEach((node, i) => {
-                gsap.from(node, {
-                    scrollTrigger: {
-                        trigger: node,
-                        start: "top 80%",
-                    },
-                    y: 50,
-                    opacity: 0,
-                    duration: 0.8,
-                    delay: i * 0.2,
-                    ease: "power3.out"
-                });
-            });
-
-            // Frameworks & AI
-            gsap.from(".gs-reveal-left", {
+            // Frameworks Animations (Specific Class - NO CONFLICT)
+            gsap.to(".frameworks-anim-left", {
                 scrollTrigger: { trigger: "#frameworks", start: "top 70%" },
-                x: -50, opacity: 0, duration: 1
+                opacity: 1, x: 0, duration: 1, ease: "power3.out"
             });
-            gsap.from(".gs-reveal-right", {
+            gsap.to(".frameworks-anim-right", {
                 scrollTrigger: { trigger: "#frameworks", start: "top 70%" },
-                x: 50, opacity: 0, duration: 1
+                opacity: 1, x: 0, duration: 1, ease: "power3.out"
             });
         }
 
         // --- 4. UI Interactions ---
-        
-        // Mobile Menu
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
         const closeMenuBtn = document.getElementById('close-menu');
         const mobileLinks = document.querySelectorAll('.mobile-link');
-
-        function toggleMenu() {
-            const isClosed = mobileMenu.classList.contains('translate-x-full');
-            if (isClosed) {
-                mobileMenu.classList.remove('translate-x-full');
-            } else {
-                mobileMenu.classList.add('translate-x-full');
-            }
-        }
-
+        function toggleMenu() { mobileMenu.classList.toggle('translate-x-full'); }
         mobileMenuBtn.addEventListener('click', toggleMenu);
         closeMenuBtn.addEventListener('click', toggleMenu);
         mobileLinks.forEach(link => link.addEventListener('click', toggleMenu));
-
-        // Contact Form Toast
         const form = document.getElementById('contact-form');
         const toast = document.getElementById('toast');
-
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            
-            // Show Toast
             toast.classList.remove('translate-y-20', 'opacity-0');
-            
-            // Reset Form
             form.reset();
-
-            // Hide Toast after 3s
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 4000);
+            setTimeout(() => { toast.classList.add('translate-y-20', 'opacity-0'); }, 4000);
         });
-
     </script>
 </body>
 </html>
